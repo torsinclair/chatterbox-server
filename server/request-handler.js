@@ -17,6 +17,7 @@ this file and include it in basic-server.js so that it actually works.
 var requestHandler = function(request, response) {
   var fs = require('fs');
   var messages = fs.readFileSync('server/messages.txt');
+  var path = require('path');
   messages = JSON.parse(messages);
 
   var defaultCorsHeaders = {
@@ -44,10 +45,81 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
+
+  /* 
+
+  if /classes/messages
+    sort between gets, posts, options
+      
+  if /xyz anything else
+    go to switch statement
+
+  all else is 404...
+
+
+
+
+
+
+  */
+
+
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
 
-  if ( ( request.method === 'GET' || request.method === 'OPTIONS') && request.url === '/classes/messages' ) {
+  if ( ( request.method === 'GET') && request.url === '/' ) {
+
+    var filePath = request.url; //    styles/css
+    if (filePath === '/') {
+      filePath = 'server/index.html';    
+    }
+
+    console.log(filePath);
+
+    var extname = path.extname(filePath);
+    var contentType = 'text/html';
+
+    switch (extname) {
+    case '.js':
+      contentType = 'text/javascript';
+      break;
+    case '.css':
+      contentType = 'text/javascript';
+      break;
+    case '.json':
+      contentType = 'application/json';
+      break;
+    case '.png':
+      contentType = 'image/png';
+      break;      
+    case '.jpg':
+      contentType = 'image/jpg';
+      break;
+    case '.wav':
+      contentType = 'audio/wav';
+      break;
+    case '.gif':
+      contentType = 'image/gif';
+      break;
+    case '.jpeg':
+      contentType = 'image/jpeg';
+      break;
+    }
+    
+    fs.readFile(filePath, function(error, content) {
+      if (error) {
+        if (error.code === 'ENOENT') {
+          response.writeHead(404);
+          response.end('Sorry, check with the site admin for error: ' + error.code + ' ..\n. Could not find: ' + filePath);
+          response.end(); 
+        }
+      } else {
+        response.writeHead(200, { 'Content-Type': contentType });
+        response.end(content, 'utf-8');
+      }
+    });
+
+  }  else if ( ( request.method === 'GET' || request.method === 'OPTIONS') && request.url === '/classes/messages' ) {
     
     var statusCode = 200;
     response.writeHead(statusCode, headers);
