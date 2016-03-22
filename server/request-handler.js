@@ -41,29 +41,40 @@ var requestHandler = function(request, response) {
 
 
   console.log(request.url);
-  if ( (request.method === 'GET' && request.url === '/classes/messages') ||
-      (request.method === 'GET' && request.url === '/log')
-    ) {
-    
+  if (request.method === 'GET' && request.url === '/classes/messages') {
+    console.log('you are in GET' + request.method);
+    console.log(request.message);
     var statusCode = 200;
     headers['Content-Type'] = 'text/plain';
     response.writeHead(statusCode, headers);
-    response.end(JSON.stringify( { results: [ {message: 'hello', name: 'Jono'}] } ));
+    response.end(JSON.stringify( { results: [ {message: 'Do my bidding!', username: 'Jono'}] } ));
+  } 
 
-  } else if (request.method === 'POST' && request.url === '/classes/messages') {
+  else if (request.method === 'GET' && request.url === '/log') {
+    console.log('you are in GET' + request.method);
+      console.log(request.message);
+    var statusCode = 200;
+    headers['Content-Type'] = 'text/plain';
+    response.writeHead(statusCode, headers);
+    response.end(JSON.stringify( { results: [ {message: 'Do my bidding!', username: 'Jono'}] } ));
+  }
 
+  else if (request.method === 'POST' && request.url === '/classes/messages') {
+    console.log('you are in POST' + request.message);
     var statusCode = 201;
     headers['Content-Type'] = 'text/plain';
     response.writeHead(statusCode, headers);
-    response.end();
+    response.end(JSON.stringify( { results: [ {message: 'Do my bidding!', username: 'Jono'}] } ));
    
-  } else {
+  } 
+
+  else {
     var statusCode = 404;
+    console.log(request.message);
     headers['Content-Type'] = 'text/plain';
     response.writeHead(statusCode, headers);
-    response.end();
-
-  }
+    response.end(JSON.stringify( { results: [ {message: 'Do my bidding!', username: 'Jono'}] } ));
+   }
     // The outgoing status.
 
     // See the note below about CORS headers.
