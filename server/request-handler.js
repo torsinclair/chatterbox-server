@@ -1,4 +1,6 @@
-var messages = {results: []};
+///pull in the new messages from disk
+
+var messages = {results: [{username: 'bob', text:'hello', roomname:'lobby'}]};
 
 /*************************************************************
 
@@ -23,7 +25,7 @@ var requestHandler = function(request, response) {
   };
   
   var headers = defaultCorsHeaders;
-  headers['Content-Type'] = 'text/plain';
+  headers['Content-Type'] = 'application/json';
 
 
   // Request and Response come from node's http module.
@@ -43,17 +45,17 @@ var requestHandler = function(request, response) {
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
 
-  if ( request.method === 'GET' && request.url === '/classes/messages' ) {
+  if ( ( request.method === 'GET' || request.method === 'OPTIONS') && request.url === '/classes/messages' ) {
     
     var statusCode = 200;
     response.writeHead(statusCode, headers);
     response.end(JSON.stringify( messages ));
 
-  } else if (request.method === 'POST' && request.url === '/classes/messages') {
+  } else if ( (request.method === 'POST' || request.method === 'OPTIONS') && request.url === '/classes/messages') {
 
     var body = '';
 
-    request.on('data',function(chunk) {
+    request.on('data', function(chunk) {
       body += chunk;
     });
 
@@ -62,6 +64,7 @@ var requestHandler = function(request, response) {
       if (messages.results.length > 100) {
         messages.results.shift();
       }
+      //// write the new message object to disk
     });
 
     var statusCode = 201;
