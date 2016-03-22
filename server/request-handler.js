@@ -14,21 +14,6 @@ this file and include it in basic-server.js so that it actually works.
 // var readline = require('readline');
 // var rl = readline.createInterface(process.stdin, process.stdout);
 
-var requestHandler = function(request, response) {
-  var fs = require('fs');
-  var messages = fs.readFileSync('server/messages.txt');
-  var path = require('path');
-  messages = JSON.parse(messages);
-
-  var defaultCorsHeaders = {
-    'access-control-allow-origin': '*',
-    'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'access-control-allow-headers': 'content-type, accept',
-    'access-control-max-age': 10 // Seconds.
-  };
-  
-  var headers = defaultCorsHeaders;
-  headers['Content-Type'] = 'application/json';
 
 
   // Request and Response come from node's http module.
@@ -49,6 +34,11 @@ var requestHandler = function(request, response) {
   /* 
 
   if /classes/messages
+
+
+
+
+
     sort between gets, posts, options
       
   if /xyz anything else
@@ -62,19 +52,60 @@ var requestHandler = function(request, response) {
 
 
   */
+var requestHandler = function(request, response) {
+  var fs = require('fs');
+  var messages = fs.readFileSync('server/messages.txt');
+  var path = require('path');
+  messages = JSON.parse(messages);
 
+  var defaultCorsHeaders = {
+    'access-control-allow-origin': '*',
+    'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'access-control-allow-headers': 'content-type, accept',
+    'access-control-max-age': 10 // Seconds.
+  };
+  
+  var headers = defaultCorsHeaders;
+  headers['Content-Type'] = 'application/json';
 
-  console.log('Serving request type ' + request.method + ' for url ' + request.url);
+  // console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
+  if (request.url === '/classes/messages') {
+    console.log(request.method);
+    if (request.method === 'GET' || request.method === 'OPTIONS') {
+      var statusCode = 200;
+      response.writeHead(statusCode, headers);
+      response.end(JSON.stringify( messages ));
+    } else {
+      var body = '';
 
-  if ( ( request.method === 'GET') && request.url === '/' ) {
+      request.on('data', function(chunk) {
+        body += chunk;
+      });
 
-    var filePath = request.url; //    styles/css
+      request.on('end', function() {
+
+        messages.results.push(JSON.parse(body));
+        if (messages.results.length > 100) {
+          messages.results.shift();
+        }
+        //// write the new message object to disk
+        fs.writeFileSync('server/messages.txt', JSON.stringify(messages));
+        var statusCode = 201;
+        response.writeHead(statusCode, headers);
+        response.end(JSON.stringify(messages)); 
+      });  
+    }
+  } else if ( request.method === 'GET') {
+
+    var filePath = request.url; //    
     if (filePath === '/') {
-      filePath = 'server/index.html';    
+      filePath = 'server/index.html';       //       server/in
+    } else {                                //    server/styles/css.css
+      filePath = 'server/' + filePath;
     }
 
-    console.log(filePath);
+
 
     var extname = path.extname(filePath);
     var contentType = 'text/html';
@@ -84,7 +115,7 @@ var requestHandler = function(request, response) {
       contentType = 'text/javascript';
       break;
     case '.css':
-      contentType = 'text/javascript';
+      contentType = 'text/css';
       break;
     case '.json':
       contentType = 'application/json';
@@ -118,41 +149,27 @@ var requestHandler = function(request, response) {
         response.end(content, 'utf-8');
       }
     });
+  } 
+};
 
-  }  else if ( ( request.method === 'GET' || request.method === 'OPTIONS') && request.url === '/classes/messages' ) {
+
+//error 
+     // else {
+     //  var statusCode = 404;
+     //  response.writeHead(statusCode, headers);
+     //  response.end();
+     //  }
+
+
     
-    var statusCode = 200;
-    response.writeHead(statusCode, headers);
-    response.end(JSON.stringify( messages ));
 
-  } else if ( (request.method === 'POST' || request.method === 'OPTIONS') && request.url === '/classes/messages') {
 
-    var body = '';
 
-    request.on('data', function(chunk) {
-      body += chunk;
-    });
+  
 
-    request.on('end', function() {
 
-      messages.results.push(JSON.parse(body));
-      if (messages.results.length > 100) {
-        messages.results.shift();
-      }
-      //// write the new message object to disk
-      fs.writeFileSync('server/messages.txt', JSON.stringify(messages));
-    });
 
-    var statusCode = 201;
-    response.writeHead(statusCode, headers);
-    response.end(JSON.stringify(messages)); 
-   
-  } else {
-    var statusCode = 404;
-    response.writeHead(statusCode, headers);
-    response.end();
 
-  }
     // The outgoing status.
 
     // See the note below about CORS headers.
@@ -175,7 +192,6 @@ var requestHandler = function(request, response) {
 
   
 
-};
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
