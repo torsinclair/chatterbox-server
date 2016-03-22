@@ -1,3 +1,5 @@
+var messages = {results: []};
+
 /*************************************************************
 
 You should implement your request handler function in this file.
@@ -21,6 +23,7 @@ var requestHandler = function(request, response) {
   };
   
   var headers = defaultCorsHeaders;
+  headers['Content-Type'] = 'text/plain';
 
 
   // Request and Response come from node's http module.
@@ -40,26 +43,33 @@ var requestHandler = function(request, response) {
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
 
-  console.log(request.url);
-  if ( (request.method === 'GET' && request.url === '/classes/messages') ||
-      (request.method === 'GET' && request.url === '/log')
-    ) {
+  if ( request.method === 'GET' && request.url === '/classes/messages' ) {
     
     var statusCode = 200;
-    headers['Content-Type'] = 'text/plain';
     response.writeHead(statusCode, headers);
-    response.end(JSON.stringify( { results: [ {message: 'hello', name: 'Jono'}] } ));
+    response.end(JSON.stringify( messages ));
 
   } else if (request.method === 'POST' && request.url === '/classes/messages') {
 
+    var body = '';
+
+    request.on('data',function(chunk) {
+      body += chunk;
+    });
+
+    request.on('end', function() {
+      messages.results.push(JSON.parse(body));
+      if (messages.results.length > 100) {
+        messages.results.shift();
+      }
+    });
+
     var statusCode = 201;
-    headers['Content-Type'] = 'text/plain';
     response.writeHead(statusCode, headers);
-    response.end();
+    response.end(JSON.stringify(messages)); 
    
   } else {
     var statusCode = 404;
-    headers['Content-Type'] = 'text/plain';
     response.writeHead(statusCode, headers);
     response.end();
 
