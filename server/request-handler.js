@@ -1,7 +1,3 @@
-///pull in the new messages from disk
-
-var messages = {results: [{username: 'bob', text:'hello', roomname:'lobby'}]};
-
 /*************************************************************
 
 You should implement your request handler function in this file.
@@ -15,7 +11,13 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+// var readline = require('readline');
+// var rl = readline.createInterface(process.stdin, process.stdout);
+
 var requestHandler = function(request, response) {
+  var fs = require('fs');
+  var messages = fs.readFileSync('server/messages.txt');
+  messages = JSON.parse(messages);
 
   var defaultCorsHeaders = {
     'access-control-allow-origin': '*',
@@ -60,11 +62,13 @@ var requestHandler = function(request, response) {
     });
 
     request.on('end', function() {
+
       messages.results.push(JSON.parse(body));
       if (messages.results.length > 100) {
         messages.results.shift();
       }
       //// write the new message object to disk
+      fs.writeFileSync('server/messages.txt', JSON.stringify(messages));
     });
 
     var statusCode = 201;
@@ -110,6 +114,4 @@ var requestHandler = function(request, response) {
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
-
-
 exports.requestHandler = requestHandler;
