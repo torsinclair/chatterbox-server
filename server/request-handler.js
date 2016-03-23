@@ -158,17 +158,6 @@ var requestHandler = function(request, response) {
      //  response.writeHead(statusCode, headers);
      //  response.end();
      //  }
-
-
-    
-
-
-
-  
-
-
-
-
     // The outgoing status.
 
     // See the note below about CORS headers.
