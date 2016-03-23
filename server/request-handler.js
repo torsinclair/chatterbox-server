@@ -71,7 +71,6 @@ var requestHandler = function(request, response) {
   // console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   if (request.url === '/classes/messages') {
-    console.log(request.method);
     if (request.method === 'GET' || request.method === 'OPTIONS') {
       var statusCode = 200;
       response.writeHead(statusCode, headers);
@@ -100,9 +99,9 @@ var requestHandler = function(request, response) {
 
     var filePath = request.url; //    
     if (filePath === '/') {
-      filePath = 'server/index.html';       //       server/in
-    } else {                                //    server/styles/css.css
-      filePath = 'server/' + filePath;
+      filePath = 'client/index.html';       //       client/in
+    } else {                                //    client/styles/css.css
+      filePath = 'client/' + filePath;
     }
 
 
